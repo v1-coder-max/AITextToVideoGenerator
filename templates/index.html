@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI VoiceOver &amp; Talking Avatar Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <!-- ===================== Header ===================== -->
+    <header class="app-header">
+        <div class="brand">
+            <span class="logo-dot"></span>
+            <h1>AI VoiceOver <span class="amp">&amp;</span> Talking Avatar <span class="accent">Studio</span></h1>
+        </div>
+        <div class="env-status" id="envStatus" title="Backend capabilities">
+            <span class="chip" data-key="edge_tts">edge-tts</span>
+            <span class="chip" data-key="ffmpeg">ffmpeg</span>
+            <span class="chip" data-key="wav2lip_ready">Wav2Lip</span>
+            <span class="chip" data-key="sadtalker_ready">SadTalker</span>
+        </div>
+    </header>
+
+    <!-- ===================== Tabs ===================== -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="voice">🎙️ Voice Studio</button>
+        <button class="tab" data-tab="avatar">🧑‍🎤 Avatar Studio</button>
+    </nav>
+
+    <main class="layout">
+        <!-- ============================================================= -->
+        <!-- VOICE STUDIO                                                   -->
+        <!-- ============================================================= -->
+        <section class="panel tab-panel active" id="panel-voice">
+            <div class="card">
+                <h2 class="card-title">Text&nbsp;to&nbsp;Speech</h2>
+                <p class="card-sub">Type a script, pick a voice, and generate studio-quality narration.</p>
+
+                <label class="field-label" for="ttsText">Script</label>
+                <textarea id="ttsText" class="script-area" placeholder="Type or paste the text you want spoken here...">Welcome to the AI VoiceOver and Talking Avatar Studio. Type your script, choose a voice, and bring it to life.</textarea>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="field-label" for="voiceSelect">Voice</label>
+                        <div class="select-row">
+                            <input
+                                type="text"
+                                id="voiceFilter"
+                                class="voice-filter"
+                                placeholder="Filter (e.g. en-US, Jenny)..."
+                            />
+                            <select id="voiceSelect" class="select"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="field">
+                        <label class="field-label" for="rate">
+                            Speed <span class="val" id="rateVal">0%</span>
+                        </label>
+                        <input type="range" id="rate" min="-100" max="100" value="0" step="5" />
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="pitch">
+                            Pitch <span class="val" id="pitchVal">0 Hz</span>
+                        </label>
+                        <input type="range" id="pitch" min="-50" max="50" value="0" step="2" />
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="generateSpeech">
+                        <span class="btn-label">Generate Speech</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </div>
+
+                <div class="result hidden" id="ttsResult">
+                    <audio id="ttsAudio" controls></audio>
+                    <div class="result-actions">
+                        <a class="btn btn-ghost" id="downloadAudio" download>⬇ Download MP3</a>
+                        <button class="btn btn-accent" id="useInAvatar">➡ Use in Avatar Studio</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- AVATAR STUDIO                                                  -->
+        <!-- ============================================================= -->
+        <section class="panel tab-panel" id="panel-avatar">
+            <div class="card">
+                <h2 class="card-title">Talking Avatar</h2>
+                <p class="card-sub">Sync any face to audio. Use a video clip (Wav2Lip) or a single photo (SadTalker).</p>
+
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="wav2lip">
+                        <strong>Lip Sync</strong><small>Upload a video</small>
+                    </button>
+                    <button class="mode-btn" data-mode="sadtalker">
+                        <strong>Photo Avatar</strong><small>Upload a photo</small>
+                    </button>
+                </div>
+
+                <div class="field">
+                    <label class="field-label" id="faceLabel">Face video (mp4)</label>
+                    <label class="dropzone" id="faceDrop">
+                        <input type="file" id="faceInput" accept="video/*" hidden />
+                        <span class="dz-icon">🎬</span>
+                        <span class="dz-text" id="faceDzText">Click to choose a video file</span>
+                    </label>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Audio</label>
+                    <label class="dropzone" id="audioDrop">
+                        <input type="file" id="audioInput" accept="audio/*" hidden />
+                        <span class="dz-icon">🔊</span>
+                        <span class="dz-text" id="audioDzText">Click to choose an audio file</span>
+                    </label>
+                    <div class="reuse-banner hidden" id="reuseBanner">
+                        <span>✓ Using generated speech: <strong id="reuseName"></strong></span>
+                        <button class="link-btn" id="clearReuse">clear</button>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="generateVideo">
+                        <span class="btn-label">Generate Video</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                    <span class="status-pill hidden" id="statusPill">queued</span>
+                </div>
+
+                <div class="result hidden" id="videoResult">
+                    <video id="resultVideo" controls></video>
+                    <div class="result-actions">
+                        <a class="btn btn-ghost" id="downloadVideo" download>⬇ Download MP4</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Render on Colab helper (recommended when no local GPU) -->
+            <div class="card colab-card" id="colabCard">
+                <div class="colab-head">
+                    <h2 class="card-title">⚡ Render on Colab</h2>
+                    <span class="colab-badge">free GPU</span>
+                </div>
+                <p class="card-sub" id="colabHint">
+                    No big local GPU? Render the talking avatar on Colab's free GPU instead.
+                    Download your audio, open the notebook (one click), and run it.
+                </p>
+
+                <ol class="colab-steps">
+                    <li>
+                        <span class="step-text">Download your generated voice (the MP3 to be spoken)</span>
+                        <a class="btn btn-ghost btn-sm" id="colabAudioBtn" download>⬇ Audio</a>
+                    </li>
+                    <li>
+                        <span class="step-text">Open the notebook in Colab — loads straight from GitHub, no upload</span>
+                        <a class="btn btn-accent btn-sm" href="https://colab.research.google.com/github/v1-coder-max/AITextToVideoGenerator/blob/main/colab/AvatarStudio_Colab.ipynb" target="_blank" rel="noopener">Open Colab ↗</a>
+                    </li>
+                    <li>
+                        <span class="step-text">In Colab: set Runtime → GPU, run the cells, upload your audio + a photo/video when asked</span>
+                    </li>
+                    <li>
+                        <span class="step-text">Pick Wav2Lip or SadTalker → the last cell previews and downloads your MP4</span>
+                    </li>
+                </ol>
+                <p class="colab-fallback">
+                    Notebook didn't open? <a href="/download/notebook" download>Download it</a>, then use
+                    <em>File → Upload notebook</em> in Colab. (Repo must be public for the one-click link.)
+                </p>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- Console (shared)                                              -->
+        <!-- ============================================================= -->
+        <aside class="console-wrap">
+            <div class="console-head">
+                <span class="console-title">▌ Console</span>
+                <button class="link-btn" id="clearConsole">clear</button>
+            </div>
+            <div class="console" id="console"></div>
+        </aside>
+    </main>
+
+    <div class="toast-host" id="toastHost"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
