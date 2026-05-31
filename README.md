@@ -16,6 +16,13 @@ pip install -r requirements.txt
 python app.py
 ```
 
+**Or deploy a live web version (free):**
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/v1-coder-max/AITextToVideoGenerator)
+
+→ See [**Deploy to Render**](#-deploy-to-render-free) below. (Voice Studio runs
+live; Avatar rendering stays on Colab.)
+
 ---
 
 ## ✨ Features
@@ -119,6 +126,33 @@ pip install -r SadTalker/requirements.txt
 ```
 
 Restart `python app.py` — the Wav2Lip / SadTalker chips should turn green.
+
+---
+
+## 🌐 Deploy to Render (free)
+
+Get a public URL where **Voice Studio runs live** (Avatar rendering stays on
+Colab — Render's free tier has no GPU). The repo includes a
+[`render.yaml`](render.yaml) Blueprint, so it's a few clicks:
+
+1. Click the **Deploy to Render** button at the top of this README — *or* go to
+   <https://dashboard.render.com> → **New → Blueprint**.
+2. Connect your GitHub and pick the **AITextToVideoGenerator** repo.
+3. Render reads `render.yaml` and proposes a free web service. Click
+   **Apply / Create**.
+4. Wait for the build (`pip install -r requirements.txt`) and first boot
+   (`gunicorn app:app …`). You'll get a URL like
+   `https://ai-voiceover-studio.onrender.com`.
+
+**What runs there:** edge-tts speech generation, voice list, preview, and MP3
+download. The Avatar Studio shows the "Render on Colab" path (no GPU on the free
+tier).
+
+**Free-tier notes:**
+- The service **sleeps after ~15 min idle**; the next visit cold-starts in
+  ~50 sec. That's normal.
+- The filesystem is **ephemeral** — generated MP3s live only until the next
+  restart/redeploy (fine for on-the-fly use; download anything you want to keep).
 
 ---
 

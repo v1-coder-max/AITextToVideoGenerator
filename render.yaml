@@ -1,0 +1,19 @@
+# Render Blueprint — deploys the Flask app as a free web service.
+#
+# What works once deployed:
+#   • Voice Studio (edge-tts) — fully functional (CPU only, needs no GPU).
+#   • Avatar Studio — detects there's no GPU/checkpoints and points users to the
+#     Colab notebook (Wav2Lip/SadTalker can't run on Render's free tier).
+#
+# One worker keeps the in-memory job store consistent; threads allow the UI to
+# poll status while a request is in flight.
+services:
+  - type: web
+    name: ai-voiceover-studio
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"

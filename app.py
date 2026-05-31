@@ -456,6 +456,10 @@ def api_status(job_id):
 # Entrypoint
 # --------------------------------------------------------------------------- #
 if __name__ == "__main__":
+    # Hosts like Render inject $PORT to bind to; default to 5000 for local dev.
+    port = int(os.environ.get("PORT", 5000))
+    # Run the debug reloader only locally (when no $PORT is provided).
+    debug = "PORT" not in os.environ
     print("=" * 60)
     print(" AI VoiceOver & Talking Avatar Studio")
     print("=" * 60)
@@ -463,6 +467,6 @@ if __name__ == "__main__":
     print(f" ffmpeg on PATH     : {shutil.which('ffmpeg') is not None}")
     print(f" Wav2Lip checkpoint : {os.path.exists(WAV2LIP_CHECKPOINT)}")
     print(f" SadTalker present  : {os.path.isdir(SADTALKER_DIR)}")
-    print(" Open http://localhost:5000")
+    print(f" Open http://localhost:{port}")
     print("=" * 60)
-    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
+    app.run(host="0.0.0.0", port=port, debug=debug, threaded=True)
